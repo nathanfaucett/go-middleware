@@ -13,7 +13,7 @@ type CorsOptions struct {
 	Headers     string
 }
 
-func Cors(options *CorsOptions) func(req *rest.Request, res *rest.Response, next func(err error)) {
+func Cors(options *CorsOptions) rest.Callback {
 	if (options == nil) {
 		options = &CorsOptions{}
 	}

@@ -14,7 +14,7 @@ type StaticServeOptions struct {
 	ServeIndex bool
 }
 
-func StaticServe(options *StaticServeOptions) func(req *rest.Request, res *rest.Response, next func(err error)) {
+func StaticServe(options *StaticServeOptions) rest.Callback {
 	_, filename, _, _ := runtime.Caller(1)
 	dirname := path.Dir(filename)
 	

@@ -11,7 +11,7 @@ type FaviconOptions struct {
 	Pathname string
 }
 
-func Favicon(options *FaviconOptions) func(req *rest.Request, res *rest.Response, next func(err error)) {
+func Favicon(options *FaviconOptions) rest.Callback {
 	_, filename, _, _ := runtime.Caller(1)
 	dirname := path.Dir(filename)
 	
