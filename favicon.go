@@ -11,7 +11,7 @@ type FaviconOptions struct {
 	Pathname string
 }
 
-func Favicon(options *FaviconOptions) rest.Callback {
+func Favicon(options *FaviconOptions) func(req *rest.Request, res *rest.Response, next func(err error)) {
 	_, filename, _, _ := runtime.Caller(1)
 	dirname := path.Dir(filename)
 	
@@ -25,6 +25,7 @@ func Favicon(options *FaviconOptions) rest.Callback {
 	}
 	
 	pathname := path.Join(dirname, options.Pathname)
+	debug.Log("using Favicon "+ options.Pathname)
 	
 	return func(req *rest.Request, res *rest.Response, next func(err error)) {
 		method := req.Method
@@ -35,7 +36,7 @@ func Favicon(options *FaviconOptions) rest.Callback {
             return
 		}
 		
-		debug("Serving "+ options.Pathname)
+		debug.Log("Serving "+ options.Pathname)
 		res.SendFile(pathname)
 		next(nil)
 	}

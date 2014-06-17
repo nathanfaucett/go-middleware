@@ -14,7 +14,7 @@ type StaticServeOptions struct {
 	ServeIndex bool
 }
 
-func StaticServe(options *StaticServeOptions) rest.Callback {
+func StaticServe(options *StaticServeOptions) func(req *rest.Request, res *rest.Response, next func(err error)) {
 	_, filename, _, _ := runtime.Caller(1)
 	dirname := path.Dir(filename)
 	
@@ -35,6 +35,7 @@ func StaticServe(options *StaticServeOptions) rest.Callback {
 	root := options.Root
 	directory := path.Join(dirname, options.Directory)
 	serveIndex := options.ServeIndex;
+	debug.Log("using StaticServe from "+ options.Directory +" root "+ root)
 	
 	return func(req *rest.Request, res *rest.Response, next func(err error)) {
 		method := req.Method
@@ -56,7 +57,7 @@ func StaticServe(options *StaticServeOptions) rest.Callback {
             return
         }
 
-		debug("Serving "+ url)
+		debug.Log("Serving "+ url)
 		url = string(url[len(root):len(url)])
 		fileName := path.Join(directory, url)
 		

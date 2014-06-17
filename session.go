@@ -1,37 +1,72 @@
 package middleware
 
 import (
+	"github.com/nathanfaucett/debugger"
 	"github.com/nathanfaucett/rest"
+	"net/http"
 	"math"
-	"rand"
+	"math/rand"
+	//"crypto/sha256"
+	//"encoding/hex"
+	//"strconv"
+	//"fmt"
 )
 
 var (
 	uid_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-	uid_chars_length = len(uid_chars)
 )
 
-func prng(length int) {
-    var out = "",
-        i;
-
-    for i = length; i--; {
-		out += uid_chars[int(math.Floor(rand.Float64() * Float64(uid_chars_length)))];
+func prng(length int) string {
+    out := ""
+    for i := 0; i < length; i++ {
+		out += string(uid_chars[int(math.Floor(rand.Float64() * 62))]);
 	}
     return out;
 }
 
+type Session struct {
+	id               string
+	cookie          *http.Cookie
+	values          *map[interface{}]interface{}
+}
+
+func NewSession() *Session{
+	this := new(Session)
+	this.values = new(map[interface{}]interface{})
+	return this
+}
+func (this *Session) Id() string {
+	return this.id
+}
+func (this *Session) Cookie() *http.Cookie {
+	return this.cookie
+}
+func (this *Session) Values() *map[interface{}]interface{} {
+	return this.values
+}
+
+type SessionsCookieOptions struct {
+	Path     string
+	MaxAge   int
+	Domain   string
+	HttpOnly bool
+	Secure   bool
+}
 type SessionsOptions struct {
 	Key             string
 	Path            string
 	TrustProxy      bool
 	RollingSessions bool
 	Secret          string
+	CookieOptions   *SessionsCookieOptions
 }
 
-func Sessions(options *SessionsOptions) rest.Callback {
+func Sessions(options *SessionsOptions) func(req *rest.Request, res *rest.Response, next func(err error)) {
+	debug := debugger.Debug("Sessions")
 	if (options == nil) {
-		options = &SessionsOptions{}
+		options = &SessionsOptions{
+			CookieOptions: &SessionsCookieOptions{},
+		}
 	}
 	if options.Key == "" {
 		options.Key = "Rest.sid"
@@ -39,12 +74,22 @@ func Sessions(options *SessionsOptions) rest.Callback {
 	if options.Path == "" {
 		options.Path = "/"
 	}
-	if options.Secret == false {
+	if options.Secret == "" {
 		options.Secret = prng(24)
 	}
 	
+	//key := options.Key
+	//path := options.Path
+	//trustProxy := options.TrustProxy
+	//rollingSessions := options.RollingSessions
+	//secret := options.Secret
+	
+	debug.Log("using Sessions")
+	
 	return func(req *rest.Request, res *rest.Response, next func(err error)) {
+		//cookie, err := req.Cookie(key)
 		
+		req.Session = NewSession()
 		next(nil)
 	}
 }

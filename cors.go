@@ -1,6 +1,7 @@
 package middleware
 
 import (
+	"github.com/nathanfaucett/debugger"
 	"github.com/nathanfaucett/rest"
 	"strconv"
 )
@@ -13,7 +14,9 @@ type CorsOptions struct {
 	Headers     string
 }
 
-func Cors(options *CorsOptions) rest.Callback {
+func Cors(options *CorsOptions) func(req *rest.Request, res *rest.Response, next func(err error)) {
+	debug := debugger.Debug("Cors")
+	
 	if (options == nil) {
 		options = &CorsOptions{}
 	}
@@ -40,6 +43,8 @@ func Cors(options *CorsOptions) rest.Callback {
 		maxAge = strconv.Itoa(options.MaxAge)
 	}
 	corsHeaders := options.Headers
+	
+	debug.Log("using Cors with options \n\torigin: "+ origin +"\n\tmethods: "+ methods +"\n\tcredentials: "+ credentials +"\n\tmaxAge: "+ maxAge +"\n\tcorsHeaders: "+ corsHeaders +"\n")
 	
 	return func(req *rest.Request, res *rest.Response, next func(err error)) {
 		var headers string
