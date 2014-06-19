@@ -1,8 +1,8 @@
 package middleware
 
 import (
+	"github.com/nathanfaucett/ctx"
 	"github.com/nathanfaucett/debugger"
-	"github.com/nathanfaucett/rest"
 	"strconv"
 )
 
@@ -14,10 +14,10 @@ type CorsOptions struct {
 	Headers     string
 }
 
-func Cors(options *CorsOptions) func(req *rest.Request, res *rest.Response, next func(err error)) {
+func Cors(options *CorsOptions) func(*ctx.Request, *ctx.Response, func(error)) {
 	debug := debugger.Debug("Cors")
-	
-	if (options == nil) {
+
+	if options == nil {
 		options = &CorsOptions{}
 	}
 	if options.Origin == "" {
@@ -32,7 +32,7 @@ func Cors(options *CorsOptions) func(req *rest.Request, res *rest.Response, next
 	if options.Headers == "" {
 		options.Headers = ""
 	}
-	
+
 	origin := options.Origin
 	methods := options.Methods
 	credentials := options.Credentials
@@ -43,33 +43,39 @@ func Cors(options *CorsOptions) func(req *rest.Request, res *rest.Response, next
 		maxAge = strconv.Itoa(options.MaxAge)
 	}
 	corsHeaders := options.Headers
-	
-	debug.Log("using Cors with options \n\torigin: "+ origin +"\n\tmethods: "+ methods +"\n\tcredentials: "+ credentials +"\n\tmaxAge: "+ maxAge +"\n\tcorsHeaders: "+ corsHeaders +"\n")
-	
-	return func(req *rest.Request, res *rest.Response, next func(err error)) {
+
+	debug.Log(
+		"using Cors with Options" +
+			"\n\torigin: " + origin +
+			"\n\tmethods: " + methods +
+			"\n\tcredentials: " + credentials +
+			"\n\tmaxAge: " + maxAge +
+			"\n\tcorsHeaders: " + corsHeaders)
+
+	return func(req *ctx.Request, res *ctx.Response, next func(error)) {
 		var headers string
 		if corsHeaders == "" {
-			headers = req.GetHeader("Access-Control-Request-Headers");
+			headers = req.GetHeader("Access-Control-Request-Headers")
 		} else {
 			headers = corsHeaders
 		}
-		
+
 		if origin != "" {
-			res.SetHeader("Access-Control-Allow-Origin", origin);
+			res.SetHeader("Access-Control-Allow-Origin", origin)
 		}
-        if methods != "" {
-			res.SetHeader("Access-Control-Allow-Methods", methods);
+		if methods != "" {
+			res.SetHeader("Access-Control-Allow-Methods", methods)
 		}
-        if credentials != "" {
-			res.SetHeader("Access-Control-Allow-Credentials", credentials);
+		if credentials != "" {
+			res.SetHeader("Access-Control-Allow-Credentials", credentials)
 		}
-        if headers != "" {
-			res.SetHeader("Access-Control-Allow-Headers", headers);
+		if headers != "" {
+			res.SetHeader("Access-Control-Allow-Headers", headers)
 		}
-        if maxAge != "" {
-			res.SetHeader("Access-Control-Allow-Max-Age", maxAge);
+		if maxAge != "" {
+			res.SetHeader("Access-Control-Allow-Max-Age", maxAge)
 		}
-		
+
 		next(nil)
 	}
 }

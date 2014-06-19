@@ -1,36 +1,23 @@
 package middleware
 
 import (
+	"github.com/nathanfaucett/ctx"
 	"github.com/nathanfaucett/debugger"
-	"github.com/nathanfaucett/rest"
+	"github.com/nathanfaucett/util"
 	"net/http"
-	"math"
-	"math/rand"
+	"strconv"
 	//"crypto/sha256"
 	//"encoding/hex"
-	//"strconv"
 	//"fmt"
 )
 
-var (
-	uid_chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-)
-
-func prng(length int) string {
-    out := ""
-    for i := 0; i < length; i++ {
-		out += string(uid_chars[int(math.Floor(rand.Float64() * 62))]);
-	}
-    return out;
-}
-
 type Session struct {
-	id               string
-	cookie          *http.Cookie
-	values          *map[interface{}]interface{}
+	id     string
+	cookie *http.Cookie
+	values *map[interface{}]interface{}
 }
 
-func NewSession() *Session{
+func NewSession() *Session {
 	this := new(Session)
 	this.values = new(map[interface{}]interface{})
 	return this
@@ -61,9 +48,9 @@ type SessionsOptions struct {
 	CookieOptions   *SessionsCookieOptions
 }
 
-func Sessions(options *SessionsOptions) func(req *rest.Request, res *rest.Response, next func(err error)) {
+func Sessions(options *SessionsOptions) func(*ctx.Request, *ctx.Response, func(error)) {
 	debug := debugger.Debug("Sessions")
-	if (options == nil) {
+	if options == nil {
 		options = &SessionsOptions{
 			CookieOptions: &SessionsCookieOptions{},
 		}
@@ -75,21 +62,27 @@ func Sessions(options *SessionsOptions) func(req *rest.Request, res *rest.Respon
 		options.Path = "/"
 	}
 	if options.Secret == "" {
-		options.Secret = prng(24)
+		options.Secret = util.Prng(24)
 	}
-	
-	//key := options.Key
-	//path := options.Path
-	//trustProxy := options.TrustProxy
-	//rollingSessions := options.RollingSessions
-	//secret := options.Secret
-	
-	debug.Log("using Sessions")
-	
-	return func(req *rest.Request, res *rest.Response, next func(err error)) {
+
+	key := options.Key
+	path := options.Path
+	trustProxy := options.TrustProxy
+	rollingSessions := options.RollingSessions
+	secret := options.Secret
+
+	debug.Log(
+		"using Sessions with Options" +
+			"\n\tkey: " + key +
+			"\n\tpath: " + path +
+			"\n\ttrustProxy: " + strconv.FormatBool(trustProxy) +
+			"\n\trollingSessions: " + strconv.FormatBool(rollingSessions) +
+			"\n\tsecret: " + secret)
+
+	return func(req *ctx.Request, res *ctx.Response, next func(error)) {
 		//cookie, err := req.Cookie(key)
-		
-		req.Session = NewSession()
+
+		req.Values["Session"] = NewSession()
 		next(nil)
 	}
 }
