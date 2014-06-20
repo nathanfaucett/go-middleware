@@ -9,9 +9,9 @@ import (
 )
 
 type StaticServeOptions struct {
-	Root       string
-	Directory  string
-	ServeIndex bool
+	Root      string
+	Directory string
+	Index     string
 }
 
 func StaticServe(options *StaticServeOptions) func(*rest.Request, *rest.Response, func(error)) {
@@ -24,7 +24,7 @@ func StaticServe(options *StaticServeOptions) func(*rest.Request, *rest.Response
 
 	if options == nil {
 		options = &StaticServeOptions{
-			ServeIndex: true,
+			Index: "index.html",
 		}
 	}
 	if options.Root == "" {
@@ -42,21 +42,23 @@ func StaticServe(options *StaticServeOptions) func(*rest.Request, *rest.Response
 
 	root := options.Root
 	directory := path.Join(dirname, options.Directory)
-	serveIndex := options.ServeIndex
+	serveIndex := options.Index != ""
+	index := path.Join(directory, options.Index)
 	debug.Log("using StaticServe from " + options.Directory + " root " + root)
 
 	return func(req *rest.Request, res *rest.Response, next func(error)) {
 		method := req.Method
-		url := req.URL.Path
 
-		if url == "/" && serveIndex {
-			fileName := path.Join(directory, "index.html")
-			res.SendFile(fileName)
+		if method != "GET" && method != "HEAD" {
 			next(nil)
 			return
 		}
 
-		if method != "GET" && method != "HEAD" {
+		url := req.URL.Path
+
+		if url == "/" && serveIndex {
+			debug.Log("Serving " + options.Index)
+			res.SendFile(index)
 			next(nil)
 			return
 		}
@@ -68,7 +70,7 @@ func StaticServe(options *StaticServeOptions) func(*rest.Request, *rest.Response
 		if method == "HEAD" {
 			debug.Log("Serving HEAD request for " + url)
 		} else {
-			debug.Log("Serving " + url)
+			debug.Log("Serving GET request for " + url)
 		}
 		url = string(url[len(root):len(url)])
 		fileName := path.Join(directory, url)
