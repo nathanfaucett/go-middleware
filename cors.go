@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/nathanfaucett/ctx"
 	"github.com/nathanfaucett/debugger"
+	"github.com/nathanfaucett/rest"
 	"strconv"
 )
 
@@ -14,7 +14,7 @@ type CorsOptions struct {
 	Headers     string
 }
 
-func Cors(options *CorsOptions) func(*ctx.Request, *ctx.Response, func(error)) {
+func Cors(options *CorsOptions) func(*rest.Request, *rest.Response, func(error)) {
 	debug := debugger.Debug("Cors")
 
 	if options == nil {
@@ -52,7 +52,7 @@ func Cors(options *CorsOptions) func(*ctx.Request, *ctx.Response, func(error)) {
 			"\n\tmaxAge: " + maxAge +
 			"\n\tcorsHeaders: " + corsHeaders)
 
-	return func(req *ctx.Request, res *ctx.Response, next func(error)) {
+	return func(req *rest.Request, res *rest.Response, next func(error)) {
 		var headers string
 		if corsHeaders == "" {
 			headers = req.GetHeader("Access-Control-Request-Headers")

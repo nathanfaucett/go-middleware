@@ -1,8 +1,8 @@
 package middleware
 
 import (
-	"github.com/nathanfaucett/ctx"
 	"github.com/nathanfaucett/debugger"
+	"github.com/nathanfaucett/rest"
 	"github.com/nathanfaucett/util"
 	"net/http"
 	"strconv"
@@ -48,7 +48,7 @@ type SessionsOptions struct {
 	CookieOptions   *SessionsCookieOptions
 }
 
-func Sessions(options *SessionsOptions) func(*ctx.Request, *ctx.Response, func(error)) {
+func Sessions(options *SessionsOptions) func(*rest.Request, *rest.Response, func(error)) {
 	debug := debugger.Debug("Sessions")
 	if options == nil {
 		options = &SessionsOptions{
@@ -79,10 +79,9 @@ func Sessions(options *SessionsOptions) func(*ctx.Request, *ctx.Response, func(e
 			"\n\trollingSessions: " + strconv.FormatBool(rollingSessions) +
 			"\n\tsecret: " + secret)
 
-	return func(req *ctx.Request, res *ctx.Response, next func(error)) {
+	return func(req *rest.Request, res *rest.Response, next func(error)) {
 		//cookie, err := req.Cookie(key)
 
-		req.Values["Session"] = NewSession()
 		next(nil)
 	}
 }

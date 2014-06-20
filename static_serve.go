@@ -1,10 +1,10 @@
 package middleware
 
 import (
-	"github.com/nathanfaucett/ctx"
 	"github.com/nathanfaucett/debugger"
+	"github.com/nathanfaucett/rest"
+	"os"
 	"path"
-	"runtime"
 	"strings"
 )
 
@@ -14,9 +14,11 @@ type StaticServeOptions struct {
 	ServeIndex bool
 }
 
-func StaticServe(options *StaticServeOptions) func(*ctx.Request, *ctx.Response, func(error)) {
-	_, filename, _, _ := runtime.Caller(1)
-	dirname := path.Dir(filename)
+func StaticServe(options *StaticServeOptions) func(*rest.Request, *rest.Response, func(error)) {
+	dirname, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
 
 	debug := debugger.Debug("StaticServe")
 
@@ -43,7 +45,7 @@ func StaticServe(options *StaticServeOptions) func(*ctx.Request, *ctx.Response, 
 	serveIndex := options.ServeIndex
 	debug.Log("using StaticServe from " + options.Directory + " root " + root)
 
-	return func(req *ctx.Request, res *ctx.Response, next func(error)) {
+	return func(req *rest.Request, res *rest.Response, next func(error)) {
 		method := req.Method
 		url := req.URL.Path
 

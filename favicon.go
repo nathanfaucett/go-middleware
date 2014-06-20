@@ -1,19 +1,21 @@
 package middleware
 
 import (
-	"github.com/nathanfaucett/ctx"
 	"github.com/nathanfaucett/debugger"
+	"github.com/nathanfaucett/rest"
+	"os"
 	"path"
-	"runtime"
 )
 
 type FaviconOptions struct {
 	Pathname string
 }
 
-func Favicon(options *FaviconOptions) func(*ctx.Request, *ctx.Response, func(error)) {
-	_, filename, _, _ := runtime.Caller(1)
-	dirname := path.Dir(filename)
+func Favicon(options *FaviconOptions) func(*rest.Request, *rest.Response, func(error)) {
+	dirname, err := os.Getwd()
+	if err != nil {
+		panic(err)
+	}
 
 	debug := debugger.Debug("Favicon")
 
@@ -27,7 +29,7 @@ func Favicon(options *FaviconOptions) func(*ctx.Request, *ctx.Response, func(err
 	pathname := path.Join(dirname, options.Pathname)
 	debug.Log("using Favicon " + options.Pathname)
 
-	return func(req *ctx.Request, res *ctx.Response, next func(error)) {
+	return func(req *rest.Request, res *rest.Response, next func(error)) {
 		method := req.Method
 		url := req.URL.Path
 
